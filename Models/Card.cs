@@ -2,6 +2,7 @@
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -96,47 +97,38 @@ namespace MTCG.Models
             }
         }
 
-        public static void GetCards(HttpSvrEventArgs e)
+        public static void GetCards(HttpSvrEventArgs e, UserToken userToken)
         {
-            try
-            {
-                string[] pathUser = e.Path.Split("/");
-                //check if username matches token
-                if (UserToken.LoggedInUser == pathUser[2])
-                {
-                    var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
-                    using var dataSource = NpgsqlDataSource.Create(connectionString);
+            try { 
+                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                using var dataSource = NpgsqlDataSource.Create(connectionString);
 
-                    // Retrieve all cards belonging to the user
-                    string replyString = "Your Cards: \n";
-                    using (var cmd = dataSource.CreateCommand("SELECT name, damage FROM cards WHERE username = (@p1)"))
+                // Retrieve all cards belonging to the user
+                string replyString = "Your Cards: \n";
+                using (var cmd = dataSource.CreateCommand("SELECT name, damage FROM cards WHERE username = (@p1)"))
+                {
+                    cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        cmd.Parameters.AddWithValue("@p1", UserToken.LoggedInUser);
-                        using (var reader = cmd.ExecuteReader())
+                        while (reader.Read())
                         {
-                            while (reader.Read())
-                            {
-                                replyString += "Cardname: " + reader.GetString(0) + " - Damage: " + reader.GetFloat(1) + "\n";
-                            }
+                            replyString += "Cardname: " + reader.GetString(0) + " - Damage: " + string.Format("{0:0.0}", reader.GetDouble(1)) + "\n";
                         }
                     }
-                    if (replyString != "Your Cards: \n")
-                    {
-                        e.Reply(200, "TEST" + replyString);
-                    }
-                    else
-                    {
-                        e.Reply(200, "No cards in your Collection.");
-                    }
+                }
+                if (replyString != "Your Cards: \n")
+                {
+                    e.Reply(200, replyString);
                 }
                 else
                 {
-                    e.Reply(400, "Authorization doesn't match request.");
+                    e.Reply(200, "No cards in your Collection.");
                 }
+
             }
             catch (Exception ex)
             {
-                e.Reply(400, "Error occured while logging in: " + ex.Message);
+                e.Reply(400, "Error occured while fetching cards: " + ex.Message);
             }
         }
     }

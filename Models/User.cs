@@ -12,6 +12,7 @@ using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
 using Microsoft.VisualBasic;
 using MTCG.Server;
+using System.Drawing;
 
 namespace MTCG.Models
 {
@@ -110,7 +111,7 @@ namespace MTCG.Models
             }
         }
 
-        public static void aquirePackage(HttpSvrEventArgs e)
+        public static void aquirePackage(HttpSvrEventArgs e, UserToken userToken)
         {
             try
             {
@@ -122,7 +123,7 @@ namespace MTCG.Models
                 // Check if user has enough coins
                 using (var cmd = dataSource.CreateCommand("SELECT coins FROM users WHERE username = (@p1)"))
                 {
-                    cmd.Parameters.AddWithValue("@p1", UserToken.LoggedInUser);
+                    cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -161,7 +162,7 @@ namespace MTCG.Models
                 foreach (Guid cardid in cards) { 
                     using (var cmd = dataSource.CreateCommand("UPDATE cards SET username = (@p1) WHERE id = (@p2)"))
                     {
-                        cmd.Parameters.AddWithValue("@p1", UserToken.LoggedInUser);
+                        cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
                         cmd.Parameters.AddWithValue("@p2", cardid);
                         cmd.ExecuteNonQuery();
                     }
@@ -175,7 +176,7 @@ namespace MTCG.Models
                 using (var cmd = dataSource.CreateCommand("UPDATE users SET coins = (@p1) WHERE username = (@p2)"))
                 {
                     cmd.Parameters.AddWithValue("@p1", coins-5);
-                    cmd.Parameters.AddWithValue("@p2", UserToken.LoggedInUser);
+                    cmd.Parameters.AddWithValue("@p2", userToken.LoggedInUser);
                     cmd.ExecuteNonQuery();
                 }
 
@@ -186,6 +187,85 @@ namespace MTCG.Models
                 e.Reply(400, "Error occured while acquiring package: " + ex.Message);
             }
         }
-        
+
+        public static void GetUserData(HttpSvrEventArgs e, UserToken userToken)
+        {
+            try
+            {
+                string[] pathUser = e.Path.Split("/");
+                //check if username matches token
+                if (userToken.LoggedInUser == pathUser[2])
+                {
+                    var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                    using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+                    // Retrieve all cards belonging to the user
+                    string replyString = "Your Profile: \n";
+                    using (var cmd = dataSource.CreateCommand("SELECT username, coins, name, bio, image FROM users WHERE username = (@p1)"))
+                    {
+                        cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                replyString += "username: " + reader.GetString(0) + 
+                                    "\ncoins: " + reader.GetInt64(1) + 
+                                    "\nname: " + (reader.IsDBNull(2) ? "" : reader.GetString(2)) + 
+                                    "\nbio: " + (reader.IsDBNull(3) ? "" : reader.GetString(3)) + 
+                                    "\nimage: " + (reader.IsDBNull(4) ? "" : reader.GetString(4)) + "\n";
+                            }
+                        }
+                    }
+                    e.Reply(200, replyString);
+                }
+                else
+                {
+                    e.Reply(400, "Authorization doesn't match request.");
+                }
+            }
+            catch (Exception ex)
+            {
+                e.Reply(400, "Error occured while fetching profile data: " + ex.Message);
+            }
+        }
+
+        public static void UpdateUserData(HttpSvrEventArgs e, UserToken userToken)
+        {
+            try
+            {
+                string[] pathUser = e.Path.Split("/");
+                //check if username matches token
+                if (userToken.LoggedInUser == pathUser[2])
+                {
+                    User? userUpdate = JsonSerializer.Deserialize<User>(e.Payload);
+
+                    var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                    using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+                    // Retrieve all cards belonging to the user
+                    string replyString = "Your Cards: \n";
+                    using (var cmd = dataSource.CreateCommand("UPDATE users SET name = (@p1), bio = (@p2), image = (@p3) WHERE username = (@p4)"))
+                    {
+                        cmd.Parameters.AddWithValue("@p1", userUpdate.Name);
+                        cmd.Parameters.AddWithValue("@p2", userUpdate.Bio);
+                        cmd.Parameters.AddWithValue("@p3", userUpdate.Image);
+                        cmd.Parameters.AddWithValue("@p4", userToken.LoggedInUser);
+                        cmd.ExecuteNonQuery();
+                    }
+                    
+                    e.Reply(200, "Profile update successful.");
+     
+                }
+                else
+                {
+                    e.Reply(400, "Authorization doesn't match request.");
+                }
+            }
+            catch (Exception ex)
+            {
+                e.Reply(400, "Error occured while updating profile: " + ex.Message);
+            }
+        }
+
     }
 }
