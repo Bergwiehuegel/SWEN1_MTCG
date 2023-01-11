@@ -9,23 +9,23 @@ using System.Threading.Tasks;
 
 namespace MTCG.Server
 {
-    internal class UserToken
+    public class UserToken
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public static properties (private setters)                                                                //
+        // public properties (private setters)                                                                       //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public static Boolean IsLoggedIn { get; private set; } = false;
+        public Boolean IsLoggedIn { get; private set; } = false;
 
-        public static Boolean IsAdmin { get; private set; } = false;
+        public Boolean IsAdmin { get; private set; } = false;
 
-        public static string? LoggedInUser { get; private set; }
+        public string? LoggedInUser { get; private set; }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public static methods                                                                                     //
+        // public methods                                                                                            //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public static void AuthenticateUser(HttpSvrEventArgs e)
+        public void AuthenticateUser(HttpSvrEventArgs e)
         {
             var index = Array.FindIndex(e.Headers, x => x.Name.Contains("Authorization"));
             if (index >= 0)
