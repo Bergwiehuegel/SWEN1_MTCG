@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace MTCG.Server
 {
-    internal class UserToken
+    public class UserToken
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public static properties (private setters)                                                                //
+        // public properties (private setters)                                                                       //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         public Boolean IsLoggedIn { get; private set; } = false;
@@ -22,7 +22,7 @@ namespace MTCG.Server
         public string? LoggedInUser { get; private set; }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public static methods                                                                                     //
+        // public methods                                                                                            //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         public void AuthenticateUser(HttpSvrEventArgs e)

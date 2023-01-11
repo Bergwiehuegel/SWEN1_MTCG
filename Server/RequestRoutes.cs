@@ -104,9 +104,8 @@ namespace MTCG.Server
                     case "/battles":
                         if (e.Method == "POST")
                         {
-                            Console.WriteLine("POST->lobby.");
+                            Lobby.Join(e, userToken.LoggedInUser);
                         }
-                        e.Reply(200);
                         break;
                     case "/tradings":
                         if (e.Method == "GET")
