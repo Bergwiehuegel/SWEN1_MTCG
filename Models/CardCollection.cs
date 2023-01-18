@@ -22,7 +22,7 @@ namespace MTCG.Models
 
 
 
-        public static void GetDeck(HttpSvrEventArgs e, UserToken userToken)
+        public void GetDeck(HttpSvrEventArgs e, UserToken userToken)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace MTCG.Models
             }
         }
 
-        public static void UpdateDeck(HttpSvrEventArgs e, UserToken userToken)
+        public void UpdateDeck(HttpSvrEventArgs e, UserToken userToken)
         {
             try
             {

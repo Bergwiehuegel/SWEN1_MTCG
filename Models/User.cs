@@ -36,7 +36,7 @@ namespace MTCG.Models
         // public methods                                                                                           //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public static void CreateUser(HttpSvrEventArgs e)
+        public void CreateUser(HttpSvrEventArgs e)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace MTCG.Models
             }
         }
 
-        public static void LoginUser(HttpSvrEventArgs e)
+        public void LoginUser(HttpSvrEventArgs e)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace MTCG.Models
             }
         }
 
-        public static void aquirePackage(HttpSvrEventArgs e, UserToken userToken)
+        public void aquirePackage(HttpSvrEventArgs e, UserToken userToken)
         {
             try
             {
@@ -188,7 +188,7 @@ namespace MTCG.Models
             }
         }
 
-        public static void GetUserData(HttpSvrEventArgs e, UserToken userToken)
+        public void GetUserData(HttpSvrEventArgs e, UserToken userToken)
         {
             try
             {
@@ -229,7 +229,7 @@ namespace MTCG.Models
             }
         }
 
-        public static void UpdateUserData(HttpSvrEventArgs e, UserToken userToken)
+        public void UpdateUserData(HttpSvrEventArgs e, UserToken userToken)
         {
             try
             {
