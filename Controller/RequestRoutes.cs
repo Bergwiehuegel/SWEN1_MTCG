@@ -24,14 +24,15 @@ namespace MTCG.Server
 
             UserToken userToken = new UserToken(); 
             userToken.AuthenticateUser(e);
+            User user = new User();
 
-            if(e.Path == "/users" && e.Method== "POST") 
+            if (e.Path == "/users" && e.Method== "POST") 
             {
-                User.CreateUser(e);
+                user.CreateUser(e);
             }
             else if (e.Path == "/sessions" && e.Method == "POST") 
             {
-                User.LoginUser(e);
+                user.LoginUser(e);
             }
             else if(userToken.IsLoggedIn) {
                 switch (e.Path)
@@ -40,24 +41,25 @@ namespace MTCG.Server
                     case string s when s.StartsWith("/users/"):
                         if (e.Method == "GET")
                         {
-                            User.GetUserData(e, userToken);
+                            user.GetUserData(e, userToken);
                         }
                         else if (e.Method == "PUT")
                         {
-                            User.UpdateUserData(e, userToken);
+                            user.UpdateUserData(e, userToken);
                         }
                         break;
                     case "/sessions":
                         if (e.Method == "POST")
                         {
-                            User.LoginUser(e);
+                            user.LoginUser(e);
                         }
                         break;
                     case "/packages":
                         if (e.Method == "POST")
                         {
                             if (userToken.IsAdmin) {
-                                Card.CreateCards(e);
+                                Card card = new Card();
+                                card.CreateCards(e);
                             }
                             else
                             {
@@ -68,23 +70,25 @@ namespace MTCG.Server
                     case "/transactions/packages":
                         if (e.Method == "POST")
                         {
-                            User.aquirePackage(e, userToken);
+                            user.aquirePackage(e, userToken);
                         }
                         break;
                     case "/cards":
                         if (e.Method == "GET")
                         {
-                            Card.GetCards(e, userToken);
+                            Card card = new Card();
+                            card.GetCards(e, userToken);
                         }
                         break;
                     case string s when s.StartsWith("/deck"):
+                        CardCollection cardCollection = new CardCollection();
                         if (e.Method == "GET")
                         {
-                            CardCollection.GetDeck(e, userToken);
+                            cardCollection.GetDeck(e, userToken);
                         }
                         else if (e.Method == "PUT")
                         {
-                            CardCollection.UpdateDeck(e, userToken);
+                            cardCollection.UpdateDeck(e, userToken);
                         }
                         break;
                     case "/stats":
@@ -104,7 +108,7 @@ namespace MTCG.Server
                     case "/battles":
                         if (e.Method == "POST")
                         {
-                            Lobby.Join(e, userToken.LoggedInUser);
+                            Lobby.Join(e, userToken);
                         }
                         break;
                     case "/tradings":

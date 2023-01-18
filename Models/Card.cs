@@ -33,7 +33,7 @@ namespace MTCG.Models
         public float Damage { get; set; }
 
 
-        public static void CreateCards(HttpSvrEventArgs e)
+        public void CreateCards(HttpSvrEventArgs e)
         {
             try
             {
@@ -97,7 +97,7 @@ namespace MTCG.Models
             }
         }
 
-        public static void GetCards(HttpSvrEventArgs e, UserToken userToken)
+        public void GetCards(HttpSvrEventArgs e, UserToken userToken)
         {
             try { 
                 var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
