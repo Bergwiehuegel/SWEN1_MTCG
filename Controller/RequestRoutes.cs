@@ -9,10 +9,11 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 
-namespace MTCG.Server
+namespace MTCG.Controller
 {
+    // utility class with just a function that routes based on path in the request
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // constructors                                                                                             //
+    // public methods                                                                                            //
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public class RequestRoutes
     {
@@ -22,6 +23,7 @@ namespace MTCG.Server
 
             Console.WriteLine(e.PlainMessage + "\n\n");
 
+            //user token to pass username and check logged in status
             UserToken userToken = new UserToken(); 
             userToken.AuthenticateUser(e);
             User user = new User();
@@ -94,16 +96,14 @@ namespace MTCG.Server
                     case "/stats":
                         if (e.Method == "GET")
                         {
-                            Console.WriteLine("GET->stats.");
+                            user.GetStats(e, userToken);
                         }
-                        e.Reply(200);
                         break;
                     case "/score":
                         if (e.Method == "GET")
                         {
-                            Console.WriteLine("GET->scoreboard.");
+                            user.GetScoreboard(e, userToken);
                         }
-                        e.Reply(200);
                         break;
                     case "/battles":
                         if (e.Method == "POST")
@@ -134,7 +134,7 @@ namespace MTCG.Server
                         e.Reply(200);
                         break;
                     default:
-                        Console.WriteLine("Rejected message.");
+                        Console.WriteLine("Rejected request.");
                         e.Reply(400);
                         break;
                 }
@@ -144,10 +144,5 @@ namespace MTCG.Server
                 e.Reply(400, "Missing or invalid token.");
             }
         }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // private methods                                                                                           //
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     }
 }

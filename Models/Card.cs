@@ -1,4 +1,4 @@
-﻿using MTCG.Server;
+﻿using MTCG.Controller;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -8,16 +8,23 @@ using System.Text.Json;
 
 namespace MTCG.Models
 {
-    public enum Element
+    public enum CardElement
     {
         Regular,
         Water,
         Fire,
     }
 
-    public enum Type
+    public enum CardType
     {
-
+        Goblin,
+        Troll,
+        Elf,
+        Knight,
+        Dragon,
+        Ork,
+        Kranken,
+        Spell,
     }
 
     internal class Card
@@ -62,7 +69,7 @@ namespace MTCG.Models
                         cmd.Parameters.AddWithValue("@p3", card.Damage);
                         cmd.Parameters.AddWithValue("@p4", false);
                         cmd.Parameters.AddWithValue("@p5", false);
-                        cmd.Parameters.AddWithValue("@p6", "");
+                        cmd.Parameters.AddWithValue("@p6", DBNull.Value);
                         cmd.ExecuteNonQuery();
                     }
                     packageids[i] = card.Id;
@@ -95,6 +102,24 @@ namespace MTCG.Models
             {
                 e.Reply(400, "Error occured while creating package: " + ex.Message);
             }
+        }
+        
+        public Card GetCard(Guid cardid)
+        {
+            Card card = null;
+
+            try
+            {
+                card = new Card();
+
+                return card;
+            }
+            catch
+            {
+
+            }
+
+            return card;
         }
 
         public void GetCards(HttpSvrEventArgs e, UserToken userToken)

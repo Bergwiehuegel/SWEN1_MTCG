@@ -7,12 +7,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace MTCG.Server
+namespace MTCG.Controller
 {
     public class UserToken
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public properties (private setters)                                                                       //
+        // public properties                                                                                         //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         public Boolean IsLoggedIn { get; private set; } = false;

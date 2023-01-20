@@ -1,4 +1,4 @@
-﻿using MTCG.Server;
+﻿using MTCG.Controller;
 using Npgsql;
 using System;
 using System.Data;
@@ -21,6 +21,7 @@ namespace MTCG
         static void Main(string[] args)
         {
             HttpSvr svr = new HttpSvr();
+            Console.WriteLine("Server started");
             svr.Incoming += _Svr_Incoming;
 
             svr.Run();

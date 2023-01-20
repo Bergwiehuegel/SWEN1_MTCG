@@ -4,7 +4,7 @@ using System.Text;
 
 
 
-namespace MTCG
+namespace MTCG.Controller
 {
     /// <summary>A delegate that represents a method that will handle an incoming HTTP message event.</summary>
     /// <param name="sender">The source of the event.</param>

@@ -5,7 +5,7 @@ using System.Text;
 
 
 
-namespace MTCG
+namespace MTCG.Controller
 {
     /// <summary>This class provides event arguments for an HTTP server.</summary>
     public class HttpSvrEventArgs: EventArgs
