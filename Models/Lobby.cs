@@ -1,55 +1,64 @@
 ﻿using MTCG;
-using MTCG.Battle;
-using MTCG.Server;
+using MTCG.Controller;
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Threading;
 
-public static class Lobby
+namespace MTCG.Models
 {
-    // A list to hold the players in the lobby
-    private static ConcurrentQueue<UserToken> players = new ConcurrentQueue<UserToken>();
-
-    // A semaphore to control access to the players list
-    private static SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
-
-    // A method for players to join the lobby
-    public static void Join(HttpSvrEventArgs e, UserToken player)
+    public static class Lobby
     {
-        // Acquire the semaphore lock
-        semaphore.Wait();
+        private static ConcurrentQueue<UserToken> PlayerQueue = new ConcurrentQueue<UserToken>();
 
-        // Add the player to the list
-        players.Enqueue(player);
-        Console.WriteLine(player + "enqueued." + Thread.CurrentThread.ManagedThreadId);
-        // If there are now two players in the lobby, start a battle
-        if (players.Count >= 2)
+        // semaphore/lock to control access to the join function
+        private static SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
+
+        // dictionary to store battle logs with users as keys (thanks to simons presentation :D )
+        private static Dictionary <UserToken, string> BattleLogs = new Dictionary<UserToken, string> ();
+
+        public static void Join(HttpSvrEventArgs e, UserToken player)
         {
-            UserToken playerOne, playerTwo;
-            players.TryDequeue(out playerOne);
-            players.TryDequeue(out playerTwo);
-            if(playerOne == playerTwo)
+            UserToken playerOne = null, playerTwo = null;
+              
+            Semaphore.Wait();
+
+            PlayerQueue.Enqueue(player);
+            Console.WriteLine(player + "enqueued." + Thread.CurrentThread.ManagedThreadId);
+            
+            if (PlayerQueue.Count >= 2)
             {
-                e.Reply(400, "Cannot battle yourself.");
+                PlayerQueue.TryDequeue(out playerOne);
+                PlayerQueue.TryDequeue(out playerTwo);
+                if (playerOne == playerTwo)
+                {
+                    e.Reply(400, "Cannot battle yourself.");
+                    return;
+                }
+            }
+            Semaphore.Release();
+
+            if ((playerOne != null) && (playerTwo != null))
+            {
+                var battle = new Battle();
+                string result = battle.Start(playerOne, playerTwo);
+                BattleLogs.Add(playerOne, result);
+                e.Reply(200, result);
                 return;
             }
-            // Create a new battle object
-            var battle = new Battle();
+                //TODO: Check if deck valid and whatnot
 
-            // Start the battle
-            string battleLogs = battle.Start(playerOne, playerTwo);
-            Console.WriteLine("waiting for thread... to finnish:" + Thread.CurrentThread.ManagedThreadId);
-            Console.WriteLine(battleLogs);
-            e.Reply(200, battleLogs);
+            while (!BattleLogs.ContainsKey(player))
+            {
+                int i = 0;
+                Thread.Sleep(500);
+                i++;
+                if(i == 20)
+                {
+                    e.Reply(400, "No Battle found - please queue again.");
+                }
+            }
+            e.Reply(200, BattleLogs[player]);
+            BattleLogs.Remove(player);
         }
-
-        Wait(e, player);
-        // Release the semaphore lock
-        semaphore.Release();
-    }
-
-    public static void Wait(HttpSvrEventArgs e, UserToken player)
-    {
-
     }
 }

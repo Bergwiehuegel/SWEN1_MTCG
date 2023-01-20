@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 using System.Xml.Linq;
 using System.Text.Json;
-using MTCG.Server;
+using MTCG.Controller;
 using Npgsql;
 using System.Drawing;
 using System.Security.Cryptography;
@@ -19,8 +19,6 @@ namespace MTCG.Models
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // public properties                                                                                         //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
         public void GetDeck(HttpSvrEventArgs e, UserToken userToken)
         {
@@ -120,6 +118,37 @@ namespace MTCG.Models
             {
                 e.Reply(400, "Error occured while fetching cards: " + ex.Message);
             }
+        }
+
+        public List<Card> PrepareDeck(UserToken userToken)
+        {
+            //try
+            //{
+            List<Card> deck = new List<Card>();
+            var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+            using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+            // Retrieve all cards with the deck tag belonging to the user
+            string replyString = "Your Deck: \n";
+            using (var cmd = dataSource.CreateCommand("SELECT name, damage FROM cards WHERE username = (@p1) AND deck = TRUE"))
+            {
+                cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        replyString += "Cardname: " + reader.GetString(0) + " - Damage: " + string.Format("{0:0.0}", reader.GetDouble(1)) + "\n";
+                    }
+                }
+            }
+
+
+            return deck;
+            //}
+            //catch (Exception ex)
+            //{
+
+            //}
         }
     }
 }

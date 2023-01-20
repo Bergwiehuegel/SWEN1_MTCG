@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
 using Microsoft.VisualBasic;
-using MTCG.Server;
+using MTCG.Controller;
 using System.Drawing;
 
 namespace MTCG.Models
@@ -57,6 +57,14 @@ namespace MTCG.Models
                     cmd.ExecuteNonQuery();
                 }
 
+                using (var cmd = dataSource.CreateCommand("INSERT INTO stats (wins, losses, elo, username) VALUES ((@p1), (@p2), (@p3), (@p4))"))
+                {
+                    cmd.Parameters.AddWithValue("@p1", 0);
+                    cmd.Parameters.AddWithValue("@p2", 0);
+                    cmd.Parameters.AddWithValue("@p3", 100);
+                    cmd.Parameters.AddWithValue("@p4", newuser.Username);
+                    cmd.ExecuteNonQuery();
+                }
                 e.Reply(200, "User created successfully");
             }
             catch (NpgsqlException ex){
@@ -267,5 +275,68 @@ namespace MTCG.Models
             }
         }
 
+        //TODO: Trade request
+
+        public void GetStats(HttpSvrEventArgs e, UserToken userToken)
+        {
+            try
+            {
+                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+                // Retrieve user stats
+                string replyString = "Your Stats: \n";
+                using (var cmd = dataSource.CreateCommand("SELECT wins, losses, elo FROM stats WHERE username = (@p1)"))
+                {
+                    cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            replyString += "username: " + userToken.LoggedInUser +
+                                "\nwins: " + reader.GetInt64(0) +
+                                "\nlosses: " + reader.GetInt64(1) +
+                                "\nelo: " + reader.GetInt64(2) + "\n";
+                        }
+                    }
+                }
+                e.Reply(200, replyString);
+            }
+            catch (Exception ex)
+            {
+                e.Reply(400, "Error occured while fetching profile data: " + ex.Message);
+            }
+        }
+
+        public void GetScoreboard(HttpSvrEventArgs e, UserToken userToken)
+        {
+            try
+            {
+                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+                //retrieve top 10 scoreboard
+                string replyString = "Top 10 Scores: \n";
+                using (var cmd = dataSource.CreateCommand("SELECT username, wins, losses, elo FROM stats ORDER BY elo DESC, wins DESC, losses ASC, username DESC LIMIT 10;"))
+                {
+                    //TODO: maybe show user under top 10 ? cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            replyString += "username: " + reader.GetString(0) +
+                                "\nwins: " + reader.GetInt64(1) +
+                                "\nlosses: " + reader.GetInt64(2) +
+                                "\nelo: " + reader.GetInt64(3) + "\n";
+                        }
+                    }
+                }
+                e.Reply(200, replyString);
+            }
+            catch (Exception ex)
+            {
+                e.Reply(400, "Error occured while fetching profile data: " + ex.Message);
+            }
+        }
     }
 }

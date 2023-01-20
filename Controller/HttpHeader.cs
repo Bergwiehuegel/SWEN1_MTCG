@@ -2,7 +2,7 @@
 
 
 
-namespace MTCG
+namespace MTCG.Controller
 {
     /// <summary>This class represents a HTTP header.</summary>
     public class HttpHeader
