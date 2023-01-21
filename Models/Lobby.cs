@@ -23,7 +23,6 @@ namespace MTCG.Models
             Semaphore.Wait();
 
             PlayerQueue.Enqueue(player);
-            Console.WriteLine(player + "enqueued." + Thread.CurrentThread.ManagedThreadId);
             
             if (PlayerQueue.Count >= 2)
             {
@@ -39,8 +38,8 @@ namespace MTCG.Models
 
             if ((playerOne != null) && (playerTwo != null))
             {
-                var battle = new Battle();
-                string result = battle.Start(playerOne, playerTwo);
+                var battle = new Battle(playerOne, playerTwo);
+                string result = battle.Start();
                 BattleLogs.Add(playerOne, result);
                 e.Reply(200, result);
                 return;

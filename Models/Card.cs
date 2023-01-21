@@ -5,39 +5,47 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace MTCG.Models
 {
-    public enum CardElement
-    {
-        Regular,
-        Water,
-        Fire,
-    }
-
-    public enum CardType
-    {
-        Goblin,
-        Troll,
-        Elf,
-        Knight,
-        Dragon,
-        Ork,
-        Kranken,
-        Spell,
-    }
-
     internal class Card
     {
+        public enum CardElement
+        {
+            Regular,
+            Water,
+            Fire,
+        }
+
+        public enum CardType
+        {
+            Goblin,
+            Troll,
+            Elf,
+            Knight,
+            Dragon,
+            Ork,
+            Kranken,
+            Spell,
+        }
+
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // public properties                                                                                         //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         public Guid Id { get; set; }
 
         public string Name { get; set; }
 
         public float Damage { get; set; }
+
+        public CardElement Element { get; set; }
+
+        public CardType Type { get; set; }  
+
+        
 
 
         public void CreateCards(HttpSvrEventArgs e)
@@ -104,56 +112,35 @@ namespace MTCG.Models
             }
         }
         
-        public Card GetCard(Guid cardid)
+        public Card GetCardStats(Card card)
         {
-            Card card = null;
-
             try
             {
-                card = new Card();
+                Card cardWithTypes = card;
+                string[] parts = Regex.Split(card.Name, "(?=[A-Z])");
 
-                return card;
-            }
-            catch
-            {
-
-            }
-
-            return card;
-        }
-
-        public void GetCards(HttpSvrEventArgs e, UserToken userToken)
-        {
-            try { 
-                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
-                using var dataSource = NpgsqlDataSource.Create(connectionString);
-
-                // Retrieve all cards belonging to the user
-                string replyString = "Your Cards: \n";
-                using (var cmd = dataSource.CreateCommand("SELECT name, damage FROM cards WHERE username = (@p1)"))
+                if (parts.Length > 2)
                 {
-                    cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            replyString += "Cardname: " + reader.GetString(0) + " - Damage: " + string.Format("{0:0.0}", reader.GetDouble(1)) + "\n";
-                        }
-                    }
-                }
-                if (replyString != "Your Cards: \n")
-                {
-                    e.Reply(200, replyString);
+                    CardElement element = (CardElement)Enum.Parse(typeof(CardElement), parts[1]);
+                    card.Element = element;
+                    CardType type = (CardType)Enum.Parse(typeof(CardType), parts[2]);
+                    card.Type = type;
                 }
                 else
                 {
-                    e.Reply(200, "No cards in your Collection.");
+                    CardType type = (CardType)Enum.Parse(typeof(CardType), parts[1]);
+                    card.Type = type;
+                    if(type != CardType.Spell)
+                    {
+                        card.Element = CardElement.Regular;
+                    }
                 }
 
+                return cardWithTypes;
             }
-            catch (Exception ex)
+            catch
             {
-                e.Reply(400, "Error occured while fetching cards: " + ex.Message);
+                throw;
             }
         }
     }
