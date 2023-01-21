@@ -17,10 +17,11 @@ namespace MTCG.Models
     internal class CardCollection
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public properties                                                                                         //
+        // private properties                                                                                        //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public void GetDeck(HttpSvrEventArgs e, UserToken userToken)
+
+        public void PrintDeck(HttpSvrEventArgs e, UserToken userToken)
         {
             try
             {
@@ -122,33 +123,71 @@ namespace MTCG.Models
 
         public List<Card> PrepareDeck(UserToken userToken)
         {
-            //try
-            //{
-            List<Card> deck = new List<Card>();
-            var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
-            using var dataSource = NpgsqlDataSource.Create(connectionString);
-
-            // Retrieve all cards with the deck tag belonging to the user
-            string replyString = "Your Deck: \n";
-            using (var cmd = dataSource.CreateCommand("SELECT name, damage FROM cards WHERE username = (@p1) AND deck = TRUE"))
+            List<Card>? FullDeck = new List<Card>();
+            try
             {
-                cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
-                using (var reader = cmd.ExecuteReader())
+                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+                // Retrieve all cards with the deck tag belonging to the user
+                using (var cmd = dataSource.CreateCommand("SELECT id, name, damage FROM cards WHERE username = (@p1) AND deck = TRUE"))
                 {
-                    while (reader.Read())
+                    cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        replyString += "Cardname: " + reader.GetString(0) + " - Damage: " + string.Format("{0:0.0}", reader.GetDouble(1)) + "\n";
+                        while (reader.Read())
+                        {
+                            Card newCard = new Card();
+                            newCard.Id = reader.GetGuid(0);
+                            newCard.Name = reader.GetString(1);
+                            newCard.Damage = (float) reader.GetDouble(2);
+                            FullDeck.Add(newCard);
+                        }
                     }
                 }
+
+
+                return FullDeck;
             }
+            catch
+            {
+                throw;
+            }
+        }
+        public void GetCards(HttpSvrEventArgs e, UserToken userToken)
+        {
+            try
+            {
+                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                using var dataSource = NpgsqlDataSource.Create(connectionString);
 
+                // Retrieve all cards belonging to the user
+                string replyString = "Your Cards: \n";
+                using (var cmd = dataSource.CreateCommand("SELECT name, damage FROM cards WHERE username = (@p1)"))
+                {
+                    cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            replyString += "Cardname: " + reader.GetString(0) + " - Damage: " + string.Format("{0:0.0}", reader.GetDouble(1)) + "\n";
+                        }
+                    }
+                }
+                if (replyString != "Your Cards: \n")
+                {
+                    e.Reply(200, replyString);
+                }
+                else
+                {
+                    e.Reply(200, "No cards in your Collection.");
+                }
 
-            return deck;
-            //}
-            //catch (Exception ex)
-            //{
-
-            //}
+            }
+            catch (Exception ex)
+            {
+                e.Reply(400, "Error occured while fetching cards: " + ex.Message);
+            }
         }
     }
 }

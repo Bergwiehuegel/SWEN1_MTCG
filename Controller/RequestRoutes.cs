@@ -78,15 +78,15 @@ namespace MTCG.Controller
                     case "/cards":
                         if (e.Method == "GET")
                         {
-                            Card card = new Card();
-                            card.GetCards(e, userToken);
+                            CardCollection cardCollections = new CardCollection();
+                            cardCollections.GetCards(e, userToken);
                         }
                         break;
                     case string s when s.StartsWith("/deck"):
                         CardCollection cardCollection = new CardCollection();
                         if (e.Method == "GET")
                         {
-                            cardCollection.GetDeck(e, userToken);
+                            cardCollection.PrintDeck(e, userToken);
                         }
                         else if (e.Method == "PUT")
                         {
