@@ -46,7 +46,6 @@ namespace MTCG.Controller
                     string[] inq = lines[0].Split(" ");
                     Method = inq[0];
                     Path = inq[1];
-                    Console.WriteLine(Path);
                 }
                 else if(inheaders)
                 {

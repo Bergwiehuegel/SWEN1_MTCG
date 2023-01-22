@@ -21,8 +21,6 @@ namespace MTCG.Controller
         {
             HttpSvrEventArgs e = (HttpSvrEventArgs)evt;
 
-            Console.WriteLine(e.PlainMessage + "\n\n");
-
             //user token to pass username and check logged in status
             UserToken userToken = new UserToken(); 
             userToken.AuthenticateUser(e);
@@ -112,23 +110,25 @@ namespace MTCG.Controller
                         }
                         break;
                     case "/tradings":
+                        Trade newTrade = new Trade();
                         if (e.Method == "GET")
                         {
-                            Console.WriteLine("GET->tr.");
+                            newTrade.GetTradingDeals(e, userToken);
                         }
                         else if (e.Method == "POST")
                         {
-                            Console.WriteLine("POST->tr.");
+                            newTrade.PostTradingDeal(e, userToken);
                         }
                         else if (e.Method == "DELETE")
                         {
                             Console.WriteLine("DELETE->tr.");
+                            e.Reply(200);
                         }
-                        e.Reply(200);
                         break;
                     case string s when s.StartsWith("/tradings/"):
                         if (e.Method == "POST")
                         {
+                            Trade tryTrade = new Trade();
                             Console.WriteLine("POST->tr->id.");
                         }
                         e.Reply(200);
