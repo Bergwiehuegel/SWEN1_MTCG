@@ -27,7 +27,8 @@ namespace MTCG.Models
             Knight,
             Dragon,
             Ork,
-            Kranken,
+            Kraken,
+            Wizzard,
             Spell,
         }
 

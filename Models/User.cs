@@ -275,8 +275,6 @@ namespace MTCG.Models
             }
         }
 
-        //TODO: Trade request
-
         public void GetStats(HttpSvrEventArgs e, UserToken userToken)
         {
             try
