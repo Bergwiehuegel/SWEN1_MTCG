@@ -1,5 +1,5 @@
--- db config based on the moodle example: 
--- docker command: docker run --name swe1db -e POSTGRES_USER=swe1user -e POSTGRES_PASSWORD=swe1pw -p 5432:5432 postgres
+-- db config based on the moodle example (db name swe1db instead of swe1user): 
+-- docker command: docker run --name swe1db -e POSTGRES_USER=swe1user -e POSTGRES_PASSWORD=swe1pw -e POSTGRES_DB=swe1db -p 5432:5432 postgres
 
 CREATE TABLE "cards" (
   "id" uuid PRIMARY KEY,

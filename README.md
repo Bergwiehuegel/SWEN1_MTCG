@@ -39,8 +39,8 @@ Database Diagram
 
 ## Time Tracking
 
->02.01. proper project start - curl script and db layout
->until 05.01. (git history starts there) first draft of working code and getting familiar with VS/C# and Postgresql
->Total hours spent: ~12 working days between 3-7 hours each. ~50 hours estimate
+- 02.01. proper project start - curl script and db layout
+- until 05.01. (git history starts there) first draft of working code and getting familiar with VS/C# and Postgresql
+- Total hours spent: ~12 working days between 3-7 hours each. ~60 hours estimate
 
 ## Bonus thanks for the course and grace time period

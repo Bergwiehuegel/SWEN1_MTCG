@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "wA635kiFNHXKwwn0HH0cLNjEg6KYvM6usDqjaNs7ORFis34D7suaWUy21FikYX7NQxriNNYQTaB5IL72ZbCOwA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\AlexanderBerg\\source\\repos\\MTCG\\MTCG.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\AlexanderBerg\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
+    "C:\\Users\\AlexanderBerg\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\6.0.0\\microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "C:\\Users\\AlexanderBerg\\.nuget\\packages\\npgsql\\7.0.1\\npgsql.7.0.1.nupkg.sha512",
+    "C:\\Users\\AlexanderBerg\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\AlexanderBerg\\.nuget\\packages\\system.text.encodings.web\\7.0.0\\system.text.encodings.web.7.0.0.nupkg.sha512",
+    "C:\\Users\\AlexanderBerg\\.nuget\\packages\\system.text.json\\7.0.1\\system.text.json.7.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

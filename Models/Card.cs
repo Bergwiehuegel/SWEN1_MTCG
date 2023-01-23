@@ -96,7 +96,7 @@ namespace MTCG.Models
                     cmd.ExecuteNonQuery();
                 }
 
-                    e.Reply(200, "Package created successfully.");
+                e.Reply(200, "Package created successfully.");
             }
             catch (NpgsqlException ex)
             {
