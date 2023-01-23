@@ -15,16 +15,19 @@ namespace MTCG.Controller
         // public properties                                                                                         //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public Boolean IsLoggedIn { get; private set; } = false;
+        public Boolean IsLoggedIn { get; set; } = false;
 
-        public Boolean IsAdmin { get; private set; } = false;
+        public Boolean IsAdmin { get; set; } = false;
 
-        public string? LoggedInUser { get; private set; }
+        public string? LoggedInUser { get; set; }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // public methods                                                                                            //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+        // checks if the name in the token (request) matches the name in the path and sets the token (class) and IsLoggedIn if it matches
+        // also checks if the user is the admin and sets IsAdmin
         public void AuthenticateUser(HttpSvrEventArgs e)
         {
             var index = Array.FindIndex(e.Headers, x => x.Name.Contains("Authorization"));

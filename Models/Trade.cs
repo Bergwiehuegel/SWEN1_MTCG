@@ -12,13 +12,20 @@ namespace MTCG.Models
 {
     internal class Trade
     {
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // public properties                                                                                         //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public Guid Id { get; set; }
         public Guid CardToTrade { get; set; }
         public string Type { get; set; }
         public float MinimumDamage { get; set; }
 
 
-        //TODO JOIN to show cards
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // public methods                                                                                           //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        // db request for all trading deals available - reply to client
         public void GetTradingDeals(HttpSvrEventArgs e, UserToken userToken)
         {
             try
@@ -51,6 +58,7 @@ namespace MTCG.Models
             }
         }
 
+        // saves a trading deal in the db
         public void PostTradingDeal(HttpSvrEventArgs e, UserToken userToken)
         {
 
@@ -78,6 +86,7 @@ namespace MTCG.Models
             }
         }
 
+        //db request for trading deal and bidding card - cards are traded if the min. requirements are met
         public void TryTrade(HttpSvrEventArgs e, UserToken userToken)
         {
             try

@@ -16,48 +16,62 @@ namespace MTCG.Models
         // dictionary to store battle logs with users as keys (thanks to simons presentation :D )
         private static Dictionary <UserToken, string> BattleLogs = new Dictionary<UserToken, string> ();
 
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // public methods                                                                                           //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        // first player to join gets enqueued and the thread waits for a battle log
+        // if two players are present starts a battle which returns batte logs for both players
         public static void Join(HttpSvrEventArgs e, UserToken player)
         {
-            UserToken playerOne = null, playerTwo = null;
-              
-            Semaphore.Wait();
-
-            PlayerQueue.Enqueue(player);
-            
-            if (PlayerQueue.Count >= 2)
+            try
             {
-                PlayerQueue.TryDequeue(out playerOne);
-                PlayerQueue.TryDequeue(out playerTwo);
-                if (playerOne == playerTwo)
+                UserToken playerOne = null, playerTwo = null;
+
+                Semaphore.Wait();
+
+                PlayerQueue.Enqueue(player);
+
+                if (PlayerQueue.Count >= 2)
                 {
-                    e.Reply(400, "Cannot battle yourself.");
+                    PlayerQueue.TryDequeue(out playerOne);
+                    PlayerQueue.TryDequeue(out playerTwo);
+                    if (playerOne == playerTwo)
+                    {
+                        e.Reply(400, "Cannot battle yourself.");
+                        return;
+                    }
+                }
+                Semaphore.Release();
+
+                if ((playerOne != null) && (playerTwo != null))
+                {
+                    var battle = new Battle(playerOne, playerTwo);
+                    string result = battle.Start();
+                    BattleLogs.Add(playerOne, result);
+                    e.Reply(200, result);
                     return;
                 }
-            }
-            Semaphore.Release();
-
-            if ((playerOne != null) && (playerTwo != null))
-            {
-                var battle = new Battle(playerOne, playerTwo);
-                string result = battle.Start();
-                BattleLogs.Add(playerOne, result);
-                e.Reply(200, result);
-                return;
-            }
                 //TODO: Check if deck valid and whatnot
 
-            while (!BattleLogs.ContainsKey(player))
-            {
-                int i = 0;
-                Thread.Sleep(500);
-                i++;
-                if(i == 20)
+                while (!BattleLogs.ContainsKey(player))
                 {
-                    e.Reply(400, "No Battle found - please queue again.");
+                    int i = 0;
+                    Thread.Sleep(500);
+                    i++;
+                    if (i == 20)
+                    {
+                        e.Reply(400, "No Battle found - please queue again.");
+                    }
                 }
+                e.Reply(200, BattleLogs[player]);
+                BattleLogs.Remove(player);
             }
-            e.Reply(200, BattleLogs[player]);
-            BattleLogs.Remove(player);
+            catch
+            {
+                e.Reply(400, "Error with Battle/Request.");
+            }
         }
     }
 }

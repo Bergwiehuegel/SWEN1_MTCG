@@ -10,8 +10,11 @@ using System.Xml.Linq;
 
 namespace MTCG.Models
 {
-    internal class Card
+    public class Card
     {
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // public enums                                                                                              //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public enum CardElement
         {
             Regular,
@@ -35,7 +38,6 @@ namespace MTCG.Models
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // public properties                                                                                         //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         public Guid Id { get; set; }
 
         public string Name { get; set; }
@@ -44,11 +46,11 @@ namespace MTCG.Models
 
         public CardElement Element { get; set; }
 
-        public CardType Type { get; set; }  
+        public CardType Type { get; set; }
 
-        
-
-
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // public methods                                                                                           //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void CreateCards(HttpSvrEventArgs e)
         {
             try
@@ -61,7 +63,7 @@ namespace MTCG.Models
 
                 if (package.Count() != 5)
                 {
-                    e.Reply(400, "Error occured while creating package.");
+                    e.Reply(400, "Error occured while creating package: not enough cards for a package.");
                     return;
                 }
 
@@ -94,7 +96,7 @@ namespace MTCG.Models
                     cmd.ExecuteNonQuery();
                 }
 
-                    e.Reply(200, "Package created successfully");
+                    e.Reply(200, "Package created successfully.");
             }
             catch (NpgsqlException ex)
             {
@@ -104,12 +106,12 @@ namespace MTCG.Models
                 }
                 else
                 {
-                    e.Reply(400, "Error occured while creating package: " + ex.Message);
+                    e.Reply(400, "Error occured while creating package.");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                e.Reply(400, "Error occured while creating package: " + ex.Message);
+                e.Reply(400, "Error occured while creating package.");
             }
         }
         
@@ -138,6 +140,10 @@ namespace MTCG.Models
                 }
 
                 return cardWithTypes;
+            }
+            catch (ArgumentException ex)
+            {
+                throw ex;
             }
             catch
             {
