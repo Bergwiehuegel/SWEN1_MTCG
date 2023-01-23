@@ -27,7 +27,6 @@ namespace MTCG.Controller
         public HttpSvrEventArgs()
         {}
 
-
         /// <summary>Creates a new instance of this class.</summary>
         /// <param name="tcp">HTTP message received from TCP listener.</param>
         public HttpSvrEventArgs(string tcp, TcpClient client)
@@ -78,16 +77,16 @@ namespace MTCG.Controller
 
 
         /// <summary>Get the HTTP method.</summary>
-        public virtual string Method
+        public string Method
         {
-            get; protected set;
+            get;  set;
         }
 
 
         /// <summary>Gets the URL path.</summary>
-        public virtual string Path
+        public string Path
         {
-            get; protected set;
+            get; set;
         }
 
 
@@ -101,7 +100,7 @@ namespace MTCG.Controller
         /// <summary>Gets the HTTP payload.</summary>
         public string Payload
         {
-            get; private set;
+            get; set;
         }
 
 
@@ -125,7 +124,6 @@ namespace MTCG.Controller
                 case 400:
                     data = "HTTP/1.1 400 Bad Request\n";
                     break;
-                // case 401 unauthorized
                 case 404:
                     data = "HTTP/1.1 404 Not Found\n";
                     break;

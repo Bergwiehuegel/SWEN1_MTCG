@@ -13,189 +13,265 @@ namespace MTCG.Models
 
 
 
-    internal class Battle
+    public class Battle
     {
-        private UserToken PlayerOne;
-        private UserToken PlayerTwo;
-        private List<Card> DeckOne;
-        private List<Card> DeckTwo;
-        private string BattleLog;
-        private bool playerOneWins = false;
-
+        private UserToken PlayerOne { get; set; }
+        private UserToken PlayerTwo { get; set; }
+        public List<Card> DeckOne { get; set; } = new List<Card>();
+        public List<Card> DeckTwo { get; set; } = new List<Card>();
+        private string BattleLog { get; set; }
+        public bool PlayerOneWins { get; set; } = false;
 
         public Battle(UserToken playerOne, UserToken playerTwo)
         {
             PlayerOne = playerOne;
             PlayerTwo = playerTwo;
         }
+
+        // starts a battle for 2 players with max 100 rounds
+        // TODO: Sudden Death Match! (if players tie after 100 rounds they enter an extra 10 rounds where cards get taken out of the deck non permanently)
         public string Start()
         {
-            CardCollection cardCollection = new CardCollection();
-            DeckOne = cardCollection.PrepareDeck(PlayerOne);
-            DeckTwo = cardCollection.PrepareDeck(PlayerTwo);
-            BattleLog += PlayerOne.LoggedInUser + " is fighting " + PlayerTwo.LoggedInUser + ":\n";
-
-            for (int rounds = 1; rounds <= 100; rounds++)
+            try
             {
-                if(DeckOne.Count() == 0 || DeckTwo.Count() == 0)
+                CardCollection cardCollection = new CardCollection();
+                DeckOne = cardCollection.PrepareDeck(PlayerOne);
+                DeckTwo = cardCollection.PrepareDeck(PlayerTwo);
+                BattleLog += PlayerOne.LoggedInUser + " is fighting " + PlayerTwo.LoggedInUser + ":\n";
+
+                for (int rounds = 1; rounds <= 100; rounds++)
                 {
-                    break;
-                    //end fight
-                }
-                //randomize an index for both decks
-                Random rnd = new Random();
-                int indexOne = rnd.Next(DeckOne.Count());
-                int indexTwo = rnd.Next(DeckTwo.Count());
-
-                float[] calcDamage = CalculateDamage(DeckOne[indexOne], DeckTwo[indexTwo]);
-
-                BattleLog += "\nRound [" + rounds + "]\n" + PlayerOne.LoggedInUser + ": " + DeckOne[indexOne].Name + " (" + DeckOne[indexOne].Damage + ") vs " +
-                    PlayerTwo.LoggedInUser + ": " + DeckTwo[indexTwo].Name + " (" + DeckTwo[indexTwo].Damage + ") => ";
-
-                //special case
-                string specialText = SpecialInteraction(DeckOne[indexOne], DeckTwo[indexTwo]);
-                if (specialText != ""){
-                    BattleLog += specialText;
-                }
-                else { 
-                    BattleLog += DeckOne[indexOne].Damage + " vs " + DeckTwo[indexTwo].Damage + " -> " +
-                        calcDamage[0] + " vs " + calcDamage[1] + " => \n";
-
-                    if (calcDamage[0] == calcDamage[1])
+                    if (DeckOne.Count() == 0)
                     {
-                        BattleLog += "Both cards tie.\n";
-                        continue;
+                        BattleLog += "\n" + PlayerTwo.LoggedInUser + " wins the battle! Congratulations!\n";
+                        UpdateStats(true, PlayerTwo);
+                        UpdateStats(false, PlayerOne);
+                        break;
                     }
-                    else if (calcDamage[0] > calcDamage[1])
+                    if (DeckTwo.Count() == 0)
                     {
-                        playerOneWins = true;
-                        BattleLog += DeckOne[indexOne].Name + " wins\n";
+                        BattleLog += "\n" + PlayerOne.LoggedInUser + " wins the battle! Congratulations!\n";
+                        UpdateStats(false, PlayerTwo);
+                        UpdateStats(true, PlayerOne);
+                        break;
+                    }
+                    //randomize an index for both decks
+                    Random rnd = new Random();
+                    int indexOne = rnd.Next(DeckOne.Count());
+                    int indexTwo = rnd.Next(DeckTwo.Count());
+
+                    float[] calcDamage = CalculateDamage(DeckOne[indexOne], DeckTwo[indexTwo]);
+
+                    BattleLog += "\nRound [" + rounds + "]\n" + PlayerOne.LoggedInUser + ": " + DeckOne[indexOne].Name + " (" + DeckOne[indexOne].Damage + ") vs " +
+                        PlayerTwo.LoggedInUser + ": " + DeckTwo[indexTwo].Name + " (" + DeckTwo[indexTwo].Damage + ") => ";
+
+                    //special case
+                    string specialText = SpecialInteraction(DeckOne[indexOne], DeckTwo[indexTwo]);
+                    if (specialText != "")
+                    {
+                        BattleLog += specialText;
                     }
                     else
                     {
-                        playerOneWins = false;
-                        BattleLog += DeckTwo[indexTwo].Name + " wins\n";
+                        BattleLog += DeckOne[indexOne].Damage + " vs " + DeckTwo[indexTwo].Damage + " -> " +
+                            calcDamage[0] + " vs " + calcDamage[1] + " => \n";
+
+                        if (calcDamage[0] == calcDamage[1])
+                        {
+                            BattleLog += "Both cards tie.\n";
+                            if (rounds == 100)
+                            {
+                                break;
+                            }
+                            continue;
+                        }
+                        else if (calcDamage[0] > calcDamage[1])
+                        {
+                            PlayerOneWins = true;
+                            BattleLog += DeckOne[indexOne].Name + " wins\n";
+                        }
+                        else
+                        {
+                            PlayerOneWins = false;
+                            BattleLog += DeckTwo[indexTwo].Name + " wins\n";
+                        }
+                    }
+
+                    ChangeCardAfterRound(indexOne, indexTwo);
+
+                    if (rounds == 100)
+                    {
+                        BattleLog += "\nBattle ended in a tie!\n";
                     }
                 }
 
-                ChangeCardAfterRound(indexOne, indexTwo);
-
+                return BattleLog;
             }
-
-            return BattleLog;
-        }
-
-
-        private string SpecialInteraction(Card cardOne, Card cardTwo)
-        {
-            string winningText = "";
-            if(cardOne.Type == CardType.Goblin && cardTwo.Type == CardType.Dragon)
+            catch
             {
-                playerOneWins = false;
-                winningText = "Dragon defeats Goblin\n";
-                return winningText;
-            }
-            else if (cardOne.Type == CardType.Dragon && cardTwo.Type == CardType.Goblin)
-            {
-                playerOneWins = true;
-                winningText = "Dragon defeats Goblin\n";
-                return winningText;
-            }
-            else if (cardOne.Type == CardType.Wizzard && cardTwo.Type == CardType.Ork)
-            {
-                playerOneWins = true;
-                winningText = "Wizzard defeats Ork\n";
-                return winningText;
-            }
-            else if (cardOne.Type == CardType.Ork && cardTwo.Type == CardType.Wizzard)
-            {
-                playerOneWins = false;
-                winningText = "Wizzard defeats Ork\n";
-                return winningText;
-            }
-            else if (cardOne.Type == CardType.Knight && (cardTwo.Type == CardType.Spell && cardTwo.Element == CardElement.Water))
-            {
-                playerOneWins = false;
-                winningText = "WaterSpell drowns Knight\n";
-                return winningText;
-            }
-            else if ((cardOne.Type == CardType.Spell && cardOne.Element == CardElement.Water) && cardTwo.Type == CardType.Knight)
-            {
-                playerOneWins = true;
-                winningText = "WaterSpell drowns Knight\n";
-                return winningText;
-            }
-            else if (cardOne.Type == CardType.Kraken && cardTwo.Type == CardType.Spell)
-            {
-                playerOneWins = true;
-                winningText = "Kraken defeats Spell\n";
-                return winningText;
-            }
-            else if (cardOne.Type == CardType.Spell && cardTwo.Type == CardType.Kraken)
-            {
-                playerOneWins = false;
-                winningText = "Kraken defeats Spell\n";
-                return winningText;
-            }
-
-            return winningText;
-        }
-
-        //winner takes over the card of the loser
-        private void ChangeCardAfterRound(int indexOne, int indexTwo)
-        {
-            if (playerOneWins)
-            {
-                DeckOne.Add(DeckTwo[indexTwo]);
-                DeckTwo.RemoveAt(indexTwo);
-            }
-            else
-            {
-                DeckTwo.Add(DeckOne[indexOne]);
-                DeckOne.RemoveAt(indexOne);
+                throw;
             }
         }
 
-        //calculates the damage of a round based on element
-        private float[] CalculateDamage(Card cardOne, Card cardTwo)
+        // checks for special card interactions that immediately win the round
+        public string SpecialInteraction(Card cardOne, Card cardTwo)
         {
-            //float array to return (if necessary) altered damage types
-            float[] damage = new float[2];
-            cardOne = cardOne.GetCardStats(cardOne);
-            cardTwo = cardTwo.GetCardStats(cardTwo);
-            //both monsters
-            if((cardOne.Type != CardType.Spell) && (cardTwo.Type != CardType.Spell)){
-                damage[0] = cardOne.Damage;
-                damage[1] = cardTwo.Damage;
-            }
-            // water -> fire | fire -> regular | regular -> water -- double/halve dmg
-            else
+            try
             {
-                if(cardOne.Element == CardElement.Water && cardTwo.Element == CardElement.Fire)
+                string winningText = "";
+                if (cardOne.Type == CardType.Goblin && cardTwo.Type == CardType.Dragon)
                 {
-                    damage[0] = cardOne.Damage*2;
-                    damage[1] = cardTwo.Damage/2;
+                    PlayerOneWins = false;
+                    winningText = "Dragon defeats Goblin\n";
+                    return winningText;
                 }
-                else if (cardOne.Element == CardElement.Fire && cardTwo.Element == CardElement.Regular)
+                else if (cardOne.Type == CardType.Dragon && cardTwo.Type == CardType.Goblin)
                 {
-                    damage[0] = cardOne.Damage * 2;
-                    damage[1] = cardTwo.Damage / 2;
+                    PlayerOneWins = true;
+                    winningText = "Dragon defeats Goblin\n";
+                    return winningText;
                 }
-                else if (cardOne.Element == CardElement.Regular && cardTwo.Element == CardElement.Water)
+                else if (cardOne.Type == CardType.Wizzard && cardTwo.Type == CardType.Ork)
                 {
-                    damage[0] = cardOne.Damage * 2;
-                    damage[1] = cardTwo.Damage / 2;
+                    PlayerOneWins = true;
+                    winningText = "Wizzard defeats Ork\n";
+                    return winningText;
                 }
-                //both the same element - no changes
+                else if (cardOne.Type == CardType.Ork && cardTwo.Type == CardType.Wizzard)
+                {
+                    PlayerOneWins = false;
+                    winningText = "Wizzard defeats Ork\n";
+                    return winningText;
+                }
+                else if (cardOne.Type == CardType.Knight && (cardTwo.Type == CardType.Spell && cardTwo.Element == CardElement.Water))
+                {
+                    PlayerOneWins = false;
+                    winningText = "WaterSpell drowns Knight\n";
+                    return winningText;
+                }
+                else if ((cardOne.Type == CardType.Spell && cardOne.Element == CardElement.Water) && cardTwo.Type == CardType.Knight)
+                {
+                    PlayerOneWins = true;
+                    winningText = "WaterSpell drowns Knight\n";
+                    return winningText;
+                }
+                else if (cardOne.Type == CardType.Kraken && cardTwo.Type == CardType.Spell)
+                {
+                    PlayerOneWins = true;
+                    winningText = "Kraken defeats Spell\n";
+                    return winningText;
+                }
+                else if (cardOne.Type == CardType.Spell && cardTwo.Type == CardType.Kraken)
+                {
+                    PlayerOneWins = false;
+                    winningText = "Kraken defeats Spell\n";
+                    return winningText;
+                }
+
+                return winningText;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        // winner takes over the card of the loser
+        public void ChangeCardAfterRound(int indexOne, int indexTwo)
+        {
+            try { 
+                if (PlayerOneWins)
+                {
+                    DeckOne.Add(DeckTwo[indexTwo]);
+                    DeckTwo.RemoveAt(indexTwo);
+                }
                 else
                 {
+                    DeckTwo.Add(DeckOne[indexOne]);
+                    DeckOne.RemoveAt(indexOne);
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        // calculates the damage of a round based on element
+        // water -> fire | fire -> regular | regular -> water -- double/halve dmg if [Spell vs Spell] or [Spell vs Monster]
+        public float[] CalculateDamage(Card cardOne, Card cardTwo)
+        {
+            try { 
+                //float array to return (if necessary) altered damage types
+                float[] damage = new float[2];
+                cardOne = cardOne.GetCardStats(cardOne);
+                cardTwo = cardTwo.GetCardStats(cardTwo);
+                //both monsters
+                if ((cardOne.Type != CardType.Spell) && (cardTwo.Type != CardType.Spell)) {
                     damage[0] = cardOne.Damage;
                     damage[1] = cardTwo.Damage;
                 }
+                else
+                {
+                    if (cardOne.Element == CardElement.Water && cardTwo.Element == CardElement.Fire)
+                    {
+                        damage[0] = cardOne.Damage * 2;
+                        damage[1] = cardTwo.Damage / 2;
+                    }
+                    else if (cardOne.Element == CardElement.Fire && cardTwo.Element == CardElement.Regular)
+                    {
+                        damage[0] = cardOne.Damage * 2;
+                        damage[1] = cardTwo.Damage / 2;
+                    }
+                    else if (cardOne.Element == CardElement.Regular && cardTwo.Element == CardElement.Water)
+                    {
+                        damage[0] = cardOne.Damage * 2;
+                        damage[1] = cardTwo.Damage / 2;
+                    }
+                    //both the same element - no changes
+                    else
+                    {
+                        damage[0] = cardOne.Damage;
+                        damage[1] = cardTwo.Damage;
+                    }
+                }
+                return damage;
             }
-            return damage;
+            catch
+            {
+                throw;
+            }
         }
 
-        //TODO: Check special
+        // updates the user stats after a battle
+        public void UpdateStats(bool win, UserToken userToken)
+        {
+            try
+            {
+                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+                if (win)
+                {
+                    using (var cmd = dataSource.CreateCommand("UPDATE stats SET wins = wins + 1, elo = elo + 3 WHERE username = (@p1)"))
+                    {
+                        cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    using (var cmd = dataSource.CreateCommand("UPDATE stats SET losses = losses + 1, elo = elo -3 WHERE username = (@p1)"))
+                    {
+                        cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }

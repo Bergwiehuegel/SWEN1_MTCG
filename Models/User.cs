@@ -16,7 +16,7 @@ using System.Drawing;
 
 namespace MTCG.Models
 {
-    internal class User
+    public class User
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // public properties                                                                                         //
@@ -36,6 +36,7 @@ namespace MTCG.Models
         // public methods                                                                                           //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        // saves a new user and an entry into battle statistics in the db
         public void CreateUser(HttpSvrEventArgs e)
         {
             try
@@ -74,15 +75,16 @@ namespace MTCG.Models
                 }
                 else
                 {
-                    e.Reply(400, "Error occured while creating user: " + ex.Message);
+                    e.Reply(400, "Error occured while creating user.");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                e.Reply(400, "Error occured while creating user: " + ex.Message);
+                e.Reply(400, "Error occured while creating user.");
             }
         }
 
+        // checks if a matching username for the authorization token exists in the db
         public void LoginUser(HttpSvrEventArgs e)
         {
             try
@@ -113,12 +115,13 @@ namespace MTCG.Models
                     e.Reply(400, "Couldn't log in.");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                e.Reply(400, "Error occured while logging in: " + ex.Message);
+                e.Reply(400, "Error occured while logging in.");
             }
         }
 
+        // package of cards gets transferred to the user if they have 5 coins to pay
         public void aquirePackage(HttpSvrEventArgs e, UserToken userToken)
         {
             try
@@ -190,12 +193,13 @@ namespace MTCG.Models
 
                 e.Reply(200, "Package acquired successfully.");
             }
-            catch (Exception ex)
+            catch 
             {
-                e.Reply(400, "Error occured while acquiring package: " + ex.Message);
+                e.Reply(400, "Error occured while acquiring package.");
             }
         }
 
+        // db request for user data - reply to client
         public void GetUserData(HttpSvrEventArgs e, UserToken userToken)
         {
             try
@@ -231,12 +235,13 @@ namespace MTCG.Models
                     e.Reply(400, "Authorization doesn't match request.");
                 }
             }
-            catch (Exception ex)
+            catch 
             {
-                e.Reply(400, "Error occured while fetching profile data: " + ex.Message);
+                e.Reply(400, "Error occured while fetching profile data.");
             }
         }
 
+        // updates user data in db 
         public void UpdateUserData(HttpSvrEventArgs e, UserToken userToken)
         {
             try
@@ -250,8 +255,7 @@ namespace MTCG.Models
                     var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
                     using var dataSource = NpgsqlDataSource.Create(connectionString);
 
-                    // Retrieve all cards belonging to the user
-                    string replyString = "Your Cards: \n";
+                    // Update user profile
                     using (var cmd = dataSource.CreateCommand("UPDATE users SET name = (@p1), bio = (@p2), image = (@p3) WHERE username = (@p4)"))
                     {
                         cmd.Parameters.AddWithValue("@p1", userUpdate.Name);
@@ -269,12 +273,13 @@ namespace MTCG.Models
                     e.Reply(400, "Authorization doesn't match request.");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                e.Reply(400, "Error occured while updating profile: " + ex.Message);
+                e.Reply(400, "Error occured while updating profile.");
             }
         }
 
+        // gets battle stats of a user - reply to client
         public void GetStats(HttpSvrEventArgs e, UserToken userToken)
         {
             try
@@ -300,12 +305,13 @@ namespace MTCG.Models
                 }
                 e.Reply(200, replyString);
             }
-            catch (Exception ex)
+            catch
             {
-                e.Reply(400, "Error occured while fetching profile data: " + ex.Message);
+                e.Reply(400, "Error occured while fetching profile data.");
             }
         }
 
+        // gets top 10 battle stats (scoreboard) - reply to client
         public void GetScoreboard(HttpSvrEventArgs e, UserToken userToken)
         {
             try
@@ -317,7 +323,6 @@ namespace MTCG.Models
                 string replyString = "Top 10 Scores: \n";
                 using (var cmd = dataSource.CreateCommand("SELECT username, wins, losses, elo FROM stats ORDER BY elo DESC, wins DESC, losses ASC, username DESC LIMIT 10;"))
                 {
-                    //TODO: maybe show user under top 10 ? cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -331,9 +336,9 @@ namespace MTCG.Models
                 }
                 e.Reply(200, replyString);
             }
-            catch (Exception ex)
+            catch
             {
-                e.Reply(400, "Error occured while fetching profile data: " + ex.Message);
+                e.Reply(400, "Error occured while fetching profile data.");
             }
         }
     }
