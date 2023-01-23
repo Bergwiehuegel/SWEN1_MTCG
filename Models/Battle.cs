@@ -131,7 +131,7 @@ namespace MTCG.Models
                         {
                             IsSuddenDeathMatch = true;
                             rounds = 0;
-                            BattleLog += "\nINITIATING SUDDEN DEATHMATCH! (Cards get now a damage boost if they win a round and losing cards get removed)\n";
+                            BattleLog += "\nINITIATING SUDDEN DEATHMATCH! (Cards now get a damage boost if they win a round and losing cards get removed)\n";
                         }
                     }
                 }
