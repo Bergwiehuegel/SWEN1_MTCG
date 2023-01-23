@@ -124,7 +124,7 @@ namespace MTCG.Models
                         RemoveCardAfterRoundAndBoostDmg(indexOne, indexTwo);
                     }
 
-                    if (rounds == 100)
+                    if (rounds >= 100)
                     {
                         BattleLog += "\nBattle ended in a tie!\n";
                         if (!IsSuddenDeathMatch)

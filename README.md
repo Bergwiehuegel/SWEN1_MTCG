@@ -1,4 +1,4 @@
-# MTCG Documentation and Learnings - Alexander Berg
+# MTCG Documentation and Learnings - Alexander Berg (needs VS 2022 (migrated to .NET 6.0))
 
 ## Link to Github
 
@@ -8,19 +8,21 @@
 
 >My Bonus Feature is a Sudden Death Match after a playerbattle would end in a tie.
 The Players battle an extra 10 rounds where the winning card gets a damage boost and the losing card gets removed.
+(I also only implemented a non-permanent card change during battle by choice.)
 
 ## Lessons Learned
 
-- Have testability in mind when writing functions! (In this case especially with the DB connection/serializing of objects/etc - seperation of concern, breaking down functions, ...)
-- Also think about visibility of properties concerning testing
-- HAVE A SOLID PLAN OF THE DESIGN (Patterns/Structure) - For the next project on top of the list - saves a lot of time and refactoring (which would be neccessary in this project - Some reading a practicing in the near future)
-- LINQ is very useful <3
-- Proper Error Handling with spefic exceptions (tried that out in some places) is also very useful
+- Have testability in mind when writing functions/classes! (In this case especially with the DB connection/serializing of objects/etc - seperation of concern, breaking down functions, ...)
+- Also think about visibility of properties in regards to testing
+- HAVE A SOLID PLAN OF THE DESIGN (Patterns/Structure) - For the next project on top of the list - saves a lot of time and refactoring (which would be neccessary in this project - Some reading and practicing in the near future)
+- LINQ is very useful!
+- Proper Error Handling with spefic exceptions (tried that out in some places) -> also very useful
+- Use models/object instances wisely/use static where appropriate - a bit wonky here
 
 ## Design
 
-- i somewhat started with the curl script to assess the requirements
-- next came the db design (based on the curl script / stats could probably be in the users)
+- i somewhat started with the curl script to assess the requirements (combined with the moodle pdf)
+- next came the db design (based on the curl script / stats could probably be in the users table but were added later)
 Database Diagram
 ![Alt text](db_diagram.png "Database Diagram")
 - rudimentary class structure in Model/Controller Structure (probably faulty to some extend)
@@ -36,6 +38,11 @@ Database Diagram
 - Since I didn't think about DB connection mocking or seperation of concerns - no tests involving the DB
 - Should've structured Routing a bit differently to be able to test with Moq HttpSvrEventArgs.
 
+## Known Issues
+
+- trade error feedback is limited
+- a LOT of null reference warnings  
+- the above mentioned subpar use of object oriented stuff
 
 ## Time Tracking
 
