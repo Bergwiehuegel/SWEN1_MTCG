@@ -362,11 +362,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\AlexanderBerg\\source\\repos\\MTCG\\MTCG.csproj",
+      "projectUniqueName": "C:\\Users\\AlexanderBerg\\source\\repos\\MTCG_Complete\\MTCG\\MTCG.csproj",
       "projectName": "MTCG",
-      "projectPath": "C:\\Users\\AlexanderBerg\\source\\repos\\MTCG\\MTCG.csproj",
+      "projectPath": "C:\\Users\\AlexanderBerg\\source\\repos\\MTCG_Complete\\MTCG\\MTCG.csproj",
       "packagesPath": "C:\\Users\\AlexanderBerg\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\AlexanderBerg\\source\\repos\\MTCG\\obj\\",
+      "outputPath": "C:\\Users\\AlexanderBerg\\source\\repos\\MTCG_Complete\\MTCG\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
