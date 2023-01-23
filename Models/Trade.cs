@@ -134,7 +134,6 @@ namespace MTCG.Models
 
                 Trade? Trade = new Trade();
                 Trade.Id = Guid.Parse(pathId[2]);
-                Console.WriteLine(Trade.Id);
                 string usernameTrade = "";
 
                 // get trading deal with username
@@ -154,19 +153,16 @@ namespace MTCG.Models
                     }
                 }
 
-                Console.WriteLine(usernameTrade + "vs" + userToken.LoggedInUser);
-
                 if (usernameTrade.Equals(userToken.LoggedInUser))
                 {
                     e.Reply(400, "Can't trade with yourself");
                     return;
                 }
 
-                Console.WriteLine("BeforeParse" + e.Payload);
                 Card biddingCard = new Card();
                 //parsing payload AND replacing masked quotes
                 biddingCard.Id = Guid.Parse(e.Payload.Replace("\"", ""));
-                Console.WriteLine(biddingCard.Id);
+
                 //get card to trade stats
                 using (var cmd = dataSource.CreateCommand("SELECT name, damage FROM cards WHERE cards.id = (@p1)"))
                 {
@@ -183,7 +179,7 @@ namespace MTCG.Models
                 //check if the requirements are met
                 biddingCard = biddingCard.GetCardStats(biddingCard);
                 bool match = false;
-                Console.WriteLine(Trade.Type);
+
                 if(biddingCard.Type == Card.CardType.Spell && Trade.Type.Equals("spell"))
                 {
                     match = true;
