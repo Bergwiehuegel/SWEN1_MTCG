@@ -21,7 +21,12 @@ namespace MTCG.Models
         public List<Card> DeckTwo { get; set; } = new List<Card>();
         private string BattleLog { get; set; }
         public bool PlayerOneWins { get; set; } = false;
+        public bool IsSuddenDeathMatch = false;
 
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // constructors                                                                                             //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public Battle(UserToken playerOne, UserToken playerTwo)
         {
             PlayerOne = playerOne;
@@ -55,6 +60,10 @@ namespace MTCG.Models
                         UpdateStats(true, PlayerOne);
                         break;
                     }
+                    if(IsSuddenDeathMatch)
+                    {
+                        rounds += 9;
+                    }
                     //randomize an index for both decks
                     Random rnd = new Random();
                     int indexOne = rnd.Next(DeckOne.Count());
@@ -62,7 +71,7 @@ namespace MTCG.Models
 
                     float[] calcDamage = CalculateDamage(DeckOne[indexOne], DeckTwo[indexTwo]);
 
-                    BattleLog += "\nRound [" + rounds + "]\n" + PlayerOne.LoggedInUser + ": " + DeckOne[indexOne].Name + " (" + DeckOne[indexOne].Damage + ") vs " +
+                    BattleLog += "\nRound [" + (IsSuddenDeathMatch ? rounds/10 : rounds) + "]\n" + PlayerOne.LoggedInUser + ": " + DeckOne[indexOne].Name + " (" + DeckOne[indexOne].Damage + ") vs " +
                         PlayerTwo.LoggedInUser + ": " + DeckTwo[indexTwo].Name + " (" + DeckTwo[indexTwo].Damage + ") => ";
 
                     //special case
@@ -81,7 +90,17 @@ namespace MTCG.Models
                             BattleLog += "Both cards tie.\n";
                             if (rounds == 100)
                             {
-                                break;
+                                if (!IsSuddenDeathMatch)
+                                {
+                                    IsSuddenDeathMatch = true;
+                                    rounds = 1;
+                                    BattleLog += "INITIATING SUDDEN DEATHMATCH! (Cards get now removed - not taken over and a winning card gets a boost do dmg)";
+                                    continue;
+                                }
+                                else
+                                {
+                                    break;
+                                }
                             }
                             continue;
                         }
@@ -96,12 +115,24 @@ namespace MTCG.Models
                             BattleLog += DeckTwo[indexTwo].Name + " wins\n";
                         }
                     }
-
-                    ChangeCardAfterRound(indexOne, indexTwo);
+                    if (!IsSuddenDeathMatch)
+                    {
+                        ChangeCardAfterRound(indexOne, indexTwo);
+                    }
+                    else
+                    {
+                        RemoveCardAfterRoundAndBoostDmg(indexOne, indexTwo);
+                    }
 
                     if (rounds == 100)
                     {
                         BattleLog += "\nBattle ended in a tie!\n";
+                        if (!IsSuddenDeathMatch)
+                        {
+                            IsSuddenDeathMatch = true;
+                            rounds = 0;
+                            BattleLog += "\nINITIATING SUDDEN DEATHMATCH! (Cards get now a damage boost if they win a round and losing cards get removed)\n";
+                        }
                     }
                 }
 
@@ -189,6 +220,28 @@ namespace MTCG.Models
                 {
                     DeckTwo.Add(DeckOne[indexOne]);
                     DeckOne.RemoveAt(indexOne);
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        // looser card gets removed and winning card gets a dmg boost of 11
+        public void RemoveCardAfterRoundAndBoostDmg(int indexOne, int indexTwo)
+        {
+            try
+            {
+                if (PlayerOneWins)
+                {
+                    DeckTwo.RemoveAt(indexTwo);
+                    DeckOne[indexOne].Damage += 11.0F;
+                }
+                else
+                {
+                    DeckOne.RemoveAt(indexOne);
+                    DeckTwo[indexTwo].Damage += 11.0F;
                 }
             }
             catch

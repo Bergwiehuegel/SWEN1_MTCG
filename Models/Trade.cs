@@ -86,6 +86,34 @@ namespace MTCG.Models
             }
         }
 
+        // deletes a trading deal in the db
+        public void DeleteTradingDeal(HttpSvrEventArgs e, UserToken userToken)
+        {
+
+            try
+            {
+                Trade newTrade = JsonSerializer.Deserialize<Trade>(e.Payload);
+
+                var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
+                using var dataSource = NpgsqlDataSource.Create(connectionString);
+
+                //TODO: check if card in possession/available for trade
+                using (var cmd = dataSource.CreateCommand("INSERT INTO trade (tradeID, cardToTrade, type, minDmg) VALUES ((@p1), (@p2), (@p3), (@p4))"))
+                {
+                    cmd.Parameters.AddWithValue("@p1", newTrade.Id);
+                    cmd.Parameters.AddWithValue("@p2", newTrade.CardToTrade);
+                    cmd.Parameters.AddWithValue("@p3", newTrade.Type);
+                    cmd.Parameters.AddWithValue("@p4", newTrade.MinimumDamage);
+                    cmd.ExecuteNonQuery();
+                }
+                e.Reply(200, "Trade deal created successfully.");
+            }
+            catch (Exception ex)
+            {
+                e.Reply(400, "Error occured while creating trade: " + ex.Message);
+            }
+        }
+
         //db request for trading deal and bidding card - cards are traded if the min. requirements are met
         public void TryTrade(HttpSvrEventArgs e, UserToken userToken)
         {
