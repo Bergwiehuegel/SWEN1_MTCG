@@ -34,7 +34,7 @@ namespace MTCG.Models
                 using var dataSource = NpgsqlDataSource.Create(connectionString);
 
                 // Retrieve all trade deals
-                string replyString = "Trade deals available: \n\n";
+                string replyString = "\nTrade deals available: \n\n";
 
                 using (var cmd = dataSource.CreateCommand("SELECT trade.tradeid, cards.name, cards.damage, trade.type, trade.mindmg FROM trade JOIN cards ON trade.cardtotrade = cards.id"))
                 {
@@ -68,15 +68,21 @@ namespace MTCG.Models
 
                 var connectionString = "Host=localhost;Username=swe1user;Password=swe1pw;Database=swe1db";
                 using var dataSource = NpgsqlDataSource.Create(connectionString);
-
-                //TODO: check if card in possession/available for trade
-                using (var cmd = dataSource.CreateCommand("INSERT INTO trade (tradeID, cardToTrade, type, minDmg) VALUES ((@p1), (@p2), (@p3), (@p4))"))
+                int rowsAffected = 0;
+                
+                using (var cmd = dataSource.CreateCommand("INSERT INTO trade (tradeID, cardToTrade, type, minDmg) SELECT (@p1), (@p2), (@p3), (@p4) WHERE EXISTS (SELECT 1 FROM cards WHERE id = (@p2) and username = (@p5))"))
                 {
                     cmd.Parameters.AddWithValue("@p1", newTrade.Id);
                     cmd.Parameters.AddWithValue("@p2", newTrade.CardToTrade);
                     cmd.Parameters.AddWithValue("@p3", newTrade.Type);
                     cmd.Parameters.AddWithValue("@p4", newTrade.MinimumDamage);
-                    cmd.ExecuteNonQuery();
+                    cmd.Parameters.AddWithValue("@p5", userToken.LoggedInUser);
+                    rowsAffected = cmd.ExecuteNonQuery();
+                }
+                if (rowsAffected == 0)
+                {
+                    e.Reply(400, "Error occured while creating trade.");
+                    return;
                 }
                 e.Reply(200, "Trade deal created successfully.");
             }
@@ -143,19 +149,23 @@ namespace MTCG.Models
                     using (var reader = cmd.ExecuteReader())
                     {
                         cmd.Parameters.AddWithValue("@p1", Trade.Id);
-                        while (reader.Read())
+                        if (reader.Read())
                         {
                             usernameTrade = reader.GetString(0);
                             Trade.Type = reader.GetString(1);
                             Trade.MinimumDamage = (float)reader.GetDouble(2);
                             Trade.CardToTrade = reader.GetGuid(3);
                         }
+                        else {
+                            e.Reply(400, "Error occured while trading.");
+                            return;
+                        }
                     }
                 }
 
                 if (usernameTrade.Equals(userToken.LoggedInUser))
                 {
-                    e.Reply(400, "Can't trade with yourself");
+                    e.Reply(400, "Can't trade with yourself.");
                     return;
                 }
 
@@ -176,11 +186,13 @@ namespace MTCG.Models
                         }
                     }
                 }
+
+                //check if a 
                 //check if the requirements are met
                 biddingCard = biddingCard.GetCardStats(biddingCard);
                 bool match = false;
 
-                if(biddingCard.Type == Card.CardType.Spell && Trade.Type.Equals("spell"))
+                if (biddingCard.Type == Card.CardType.Spell && Trade.Type.Equals("spell"))
                 {
                     match = true;
                 }
@@ -198,7 +210,7 @@ namespace MTCG.Models
                     e.Reply(400, "Minimum requirements not met");
                     return;
                 }
-                //process trade transaction
+                // process trade transaction
                 using (var cmd = dataSource.CreateCommand("UPDATE cards SET username = (@p1) WHERE id = (@p2)"))
                 {
                     cmd.Parameters.AddWithValue("@p1", userToken.LoggedInUser);
@@ -209,6 +221,13 @@ namespace MTCG.Models
                 {
                     cmd.Parameters.AddWithValue("@p1", usernameTrade);
                     cmd.Parameters.AddWithValue("@p2", biddingCard.Id);
+                    cmd.ExecuteNonQuery();
+                }
+
+                // delete trade in db
+                using (var cmd = dataSource.CreateCommand("DELETE FROM trade WHERE tradeid = (@p1)"))
+                {
+                    cmd.Parameters.AddWithValue("@p1", Trade.Id);
                     cmd.ExecuteNonQuery();
                 }
 
