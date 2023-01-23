@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace MTCG.Controller
 {
-    // utility class with just a function that routes based on path in the request
+    // utility class with a function that routes based on path in the request
     // needs an authenticated user for most paths
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // public methods                                                                                            //
